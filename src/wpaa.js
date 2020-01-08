@@ -21,10 +21,23 @@ export default {
 	_buildData: function( action, data, POST ){
 		data = data || {}
 
-		// If nonce is not defined in data, we assume the element to pull nonce from has the ID of the action
+		// If nonce is not defined in data, try to pull from window object first, then try finding an HTML element
 		if ( !('nonce' in data) ) {
-			data.nonce = window.document.getElementById( action ).value
+
+			if( action in window ){
+				data.nonce = window[ action ]
+			} else {
+				const element = window.document.getElementById( action )
+				if( typeof( element ) !== 'undefined' && element !== null ){
+					data.nonce = element.value
+				}
+			}
 		}
+
+		// TODO
+		// if ( data.nonce.length < 1 ) {
+		// 	throw new Error( 'You must specify an nonce to make an admin ajax call! This IS required!')
+		// }
 
 		// If action is not set (really it shouldn't be), we set it from passed value
 		if ( !('action' in data) ) {
@@ -74,6 +87,10 @@ export default {
 		console.log( this._options )
 
 		defaultOptions.transformResponse = ( data ) => {
+			if( ! data || data === -1 || data === 0 ){
+				return data
+			}
+			console.log( 'TRANSFORM RESPONSE', data )
 			const jsonDATA = JSON.parse( data )
 
 			if ( this._options.returnData && jsonDATA && ('data' in jsonDATA) ) {
@@ -87,20 +104,23 @@ export default {
 		options = Object.assign( defaultOptions, options )
 		return options
 	},
-	post: async function( action, data, options ){
+	post: function( action, data, options ){
 		options = this._buildOptions('POST', action, data, options )
 		return !this._options.returnOnlyData ? axios.request( options ) : this._data_only( options )
 	},
-	get: async function( action, data, options ){
+	get: function( action, data, options ){
 		options = this._buildOptions( 'GET', action, data, options )
 		return !this._options.returnOnlyData ? axios.request( options ) : this._data_only( options )
 	},
-	_data_only: async function( options ){
-		try {
-			const result = await axios.request( options )
-			return result && ('data' in result) ? result.data : result;
-		} catch ( error ) {
-			throw new Error( error )
-		}
+	_data_only: function( options ){
+		return new Promise( function( resolve, reject ){
+
+			axios.request( options ).then( function( result ){
+				resolve( result && ('data' in result) ? result.data : result )
+			}).catch( function( error ){
+				reject( error )
+			})
+
+		})
 	}
 }

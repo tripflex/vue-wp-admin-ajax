@@ -12,7 +12,7 @@ This is a Vue.js plugin specifically for handling WordPress Admin Ajax (`admin-a
 - Response data parsing
 - Promises and async/await support
 - Automatically sets `action` and `nonce` if not manually defined
-- Automatically sets `ajaxurl` if not manually defined
+- Automatically sets `ajaxurl` if not manually defined (from `window.ajaxurl` )
 - Optional callback on document ready
 - Uses WordPress' `addLoadEvent` if available, otherwise checks document ready state or uses `DOMContentLoaded` if not ready when loaded
 
@@ -91,18 +91,33 @@ this._vm.$wpaa.post( 'some_action', {id: someID })
 ## Examples
 
 #### PHP
-Somewhere on the page you need to output the nonce to be used, for ease of use you should use the same name as the action itself.  This plugin will automatically attempt to get the nonce value based on the action, if you don't specify one in the `data` parameter.
+Somewhere on the page you need to output the nonce to be used, for ease of use you should use the same name as the action itself.
 
+This plugin will automatically attempt to get the nonce value based on the action, if you don't specify one in the `data` parameter.
+
+It will first look for the value in the `window` object, based on the action name.
+
+You can use `wp_localize_script` to output an nonce value on the `window` object (after calling `wp_register_script` and before calling `wp_enqueue_script`):
+```php
+wp_localize_script( 'YOUR-SCRIPT-HANDLE', 'vuewpaa_demo', wp_create_nonce( 'vuewpaa_demo' ) );
+```
+
+If a value is not found on the window object, this plugin will check for an actual input HTML element to obtain the value from
+
+To output an actual input with an nonce value using `wp_nonce_field` (this will create a `hidden` HTML `input` field):
 ```php
 wp_nonce_field( 'vuewpaa_demo', 'vuewpaa_demo' );
 ```
 
-AJAX Handling
+If you don't use any of the methods above, you MUST specify the nonce in the `data` parameter (using the `nonce` key)
+
+PHP AJAX Handling
 ```php
 add_action( 'wp_ajax_vuewpaa_demo', 'vuewpaa_demo_response' );
 
 function vuewpaa_demo_response(){
-
+    
+	// Plugin will always pass the nonce under the `nonce` parameter/name
     check_ajax_referer( 'vuewpaa_demo', 'nonce' );
     
     $post_id = absint( $_POST['id'] );
@@ -185,6 +200,18 @@ sendRequest(){
 ## Dependencies
 - [Axios](https://github.com/axios/axios) - Promise based HTTP client for the browser and node.js
 - [QS](https://github.com/ljharb/qs) - Used to stringify data before being sent
+
+
+## Frontend Setup
+If you plan to use this on the frontend of your site, `window.ajaxurl` is NOT set already, so you MUST localize it to be output or manually define it in the options (when initializing this plugin, or making the call).  To add in global options do it like this:
+```javascript
+Vue.use(WPAdminAjax, { returnData: true, ajaxurl: YOUR_AJAX_URL_VALUE })
+````
+
+The easier way would be to just localize the variable (after you call `wp_register_script` and before you call `wp_enqueue_script` ) in PHP (this will allow this plugin to automatically detect the ajax url):
+```PHP
+wp_localize_script( 'YOUR-SCRIPT-HANDLE', 'ajaxurl', admin_url( 'admin-ajax.php' ) );
+```
 
 ## Demo Setup
 
