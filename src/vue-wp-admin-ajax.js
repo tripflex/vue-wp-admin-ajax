@@ -13,19 +13,19 @@ WPAdminAjax.install = function (Vue, options) {
 
   const defaultOptions = {
     /**
-     * returnData tells this plugin to parse the response, which assumes that on the WordPress PHP side,
+     * wpReturnData tells this plugin to parse the response, which assumes that on the WordPress PHP side,
      * that you are using wp_send_json_error and wp_send_json_success, which wraps the response in an object like this:
      * { success: BOOLEAN, data: USERDATA }
      *
      * By leaving this set to `true`, this plugin will parse the response from WordPress, converting the value set in `data` to a JSON Object,
      * and setting that as the data (instead of the object with success and data in it)
      */
-    returnData: true,
+    wpReturnData: true,
     /**
-     * returnOnlyData tells the plugin to only resolve/reject the promise and return the value for `data` in the axios response ... rather than returning
+     * axiosReturnData tells the plugin to only resolve/reject the promise and return the value for `data` in the axios response ... rather than returning
      * the entire response object
      */
-    returnOnlyData: true
+    axiosReturnData: true
   }
 
   WPAA._options = Object.assign( defaultOptions, options || {} )

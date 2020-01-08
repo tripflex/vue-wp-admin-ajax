@@ -33,20 +33,54 @@ Vue.use(WPAdminAjax)
 #### Custom Options
 ```vue
 import WPAdminAjax from 'vue-wp-admin-ajax'
-Vue.use(WPAdminAjax, { returnData: true })
+Vue.use(WPAdminAjax, { wpReturnData: true })
 ```
 
 #### Options
 
-- (boolean) `returnData` - Default `true` - Whether or not to parse the response, which assumes that on the WordPress PHP side, that you are using `wp_send_json_error` and `wp_send_json_success`, which wraps the response in an object like `{ success: BOOLEAN, data: USERDATA }`
+- (boolean) `wpReturnData` - Default `true` - Whether or not to parse the response, which assumes that on the WordPress PHP side, that you are using `wp_send_json_error` and `wp_send_json_success`, which wraps the response in an object like `{ success: BOOLEAN, data: USERDATA }`
 
-    When `true` (default), this plugin will parse the response from WordPress, converting the value set in `data` to a JSON Object, otherwise it will return the entire response.
+    When `true` (default), this plugin will parse the response from WordPress, converting the value set in `data` to a JSON Object, otherwise it will return the entire response. (this is specifically for the WordPress response)
 
-- (boolean) `returnOnlyData` - Default `true` - By default in axios, the entire response object is returned, by leaving this setting to `true`, only the value found in the response `data` is returned.  Set this to `false` to return the entire axios response object.
+- (boolean) `axiosReturnData` - Default `true` - By default in axios, the entire response object is returned, by leaving this setting to `true`, only the value found in the response `data` is returned.  Set this to `false` to return the entire axios response object (this is specific to Axios)
 
 - (function) `ready` - Use this to specify a custom callback function to be called when the document is in a ready state. Will be passed the instance of this plugin.
 
 - (object) `axios` - Use this to specify any specific axios options to use for all requests. All available options can be found under [Request Config](https://github.com/axios/axios#request-config) in axios documentation.  This can also be specified in each request (see below).
+
+#### `wpReturnData` vs `axiosReturnData`
+The two options `wpReturnData` and `axiosReturnData` can be a bit confusing ...
+
+To clarify, `axiosReturnData` is specifically for the axios response.  When Axios returns a response, it is wrapped in schema that includes `status`, `data`, and a few other things, see [https://github.com/axios/axios#response-schema](https://github.com/axios/axios#response-schema)
+
+`wpReturnData` is specifically for the WordPress response if you're using `wp_send_json_error` or `wp_send_json_success`.  If you are (and you should be), this would technically be the response from axios (if both `wpReturnData` and `axiosReturnData` are set to `false`):
+
+```javascript
+{
+  data: {
+  	{
+  		success: true,
+  		data: {
+  			some: 'value'
+  		}
+  	}
+  },
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: {},
+  request: {}
+}
+```
+
+As you can see, this means the response from axios actually has `data` parameter twice.  When `wpReturnData` and `axiosReturnData` are both `true` (they are by default), instead of returning the response you see above, this will be returned:
+
+```javascript
+{
+    some: 'value'
+}
+````
+
 ## Usage
 After installing this plugin, you can access it using the Vue instance:
 ```
@@ -205,7 +239,7 @@ sendRequest(){
 ## Frontend Setup
 If you plan to use this on the frontend of your site, `window.ajaxurl` is NOT set already, so you MUST localize it to be output or manually define it in the options (when initializing this plugin, or making the call).  To add in global options do it like this:
 ```javascript
-Vue.use(WPAdminAjax, { returnData: true, ajaxurl: YOUR_AJAX_URL_VALUE })
+Vue.use(WPAdminAjax, { ajaxurl: YOUR_AJAX_URL_VALUE })
 ````
 
 The easier way would be to just localize the variable (after you call `wp_register_script` and before you call `wp_enqueue_script` ) in PHP (this will allow this plugin to automatically detect the ajax url):

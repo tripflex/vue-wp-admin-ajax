@@ -16,7 +16,8 @@ export default {
 	},
 	_options: {
 		ajaxurl: window.ajaxurl,
-		axios: {}
+		axios: {},
+		nonce_key: ''
 	},
 	_buildData: function( action, data, POST ){
 		data = data || {}
@@ -24,7 +25,9 @@ export default {
 		// If nonce is not defined in data, try to pull from window object first, then try finding an HTML element
 		if ( !('nonce' in data) ) {
 
-			if( action in window ){
+			if( this._options.nonce_key.length > 0 && (this._options.nonce_key in window ) ){
+				data.nonce = window[ this._options.nonce_key ]
+			} else if( action in window ){
 				data.nonce = window[ action ]
 			} else {
 				const element = window.document.getElementById( action )
@@ -93,7 +96,7 @@ export default {
 			console.log( 'TRANSFORM RESPONSE', data )
 			const jsonDATA = JSON.parse( data )
 
-			if ( this._options.returnData && jsonDATA && ('data' in jsonDATA) ) {
+			if ( this._options.wpReturnData && jsonDATA && ('data' in jsonDATA) ) {
 				console.log( 'jsonDATA', jsonDATA.data )
 				return jsonDATA.data
 			}
@@ -106,11 +109,11 @@ export default {
 	},
 	post: function( action, data, options ){
 		options = this._buildOptions('POST', action, data, options )
-		return !this._options.returnOnlyData ? axios.request( options ) : this._data_only( options )
+		return this._options.axiosReturnData ? this._data_only( options ) : axios.request( options )
 	},
 	get: function( action, data, options ){
 		options = this._buildOptions( 'GET', action, data, options )
-		return !this._options.returnOnlyData ? axios.request( options ) : this._data_only( options )
+		return this._options.axiosReturnData ? this._data_only( options ) : axios.request( options )
 	},
 	_data_only: function( options ){
 		return new Promise( function( resolve, reject ){
