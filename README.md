@@ -48,6 +48,8 @@ Vue.use(WPAdminAjax, { wpReturnData: true })
 
 - (object) `axios` - Use this to specify any specific axios options to use for all requests. All available options can be found under [Request Config](https://github.com/axios/axios#request-config) in axios documentation.  This can also be specified in each request (see below).
 
+- (string) `nonce_key` - You can use this option to define the key in `window` object to use for the nonce (when one is not defined in `data` already).  This is useful if you're going to use the same nonce for all ajax calls.
+
 #### `wpReturnData` vs `axiosReturnData`
 The two options `wpReturnData` and `axiosReturnData` can be a bit confusing ...
 
@@ -57,19 +59,17 @@ To clarify, `axiosReturnData` is specifically for the axios response.  When Axio
 
 ```javascript
 {
-  data: {
-  	{
-  		success: true,
-  		data: {
-  			some: 'value'
-  		}
-  	}
-  },
-  status: 200,
-  statusText: 'OK',
-  headers: {},
-  config: {},
-  request: {}
+    data: {
+        success: true,
+        data: {
+            some: 'value'
+        }
+    },
+    status: 200,
+    statusText: 'OK',
+    headers: {},
+    config: {},
+    request: {}
 }
 ```
 
