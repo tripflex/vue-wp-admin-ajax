@@ -1,6 +1,6 @@
 /**
  * vue-wp-admin-ajax
- * (c) 2019 Myles McNamara
+ * (c) 2022 Myles McNamara
  * @license MIT
  */
 import WPAA from './wpaa'

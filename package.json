@@ -1,7 +1,7 @@
 {
   "name": "vue-wp-admin-ajax",
   "description": "WordPress admin ajax request plugin for Vue.js",
-  "version": "0.0.0",
+  "version": "1.0.1",
   "private": false,
   "main": "dist/vue-wp-admin-ajax.js",
   "files": [
@@ -28,8 +28,7 @@
     "build:demo": "node build/build.js",
     "build:library": "node build/build.rollup.js"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "autoprefixer": "^6.7.2",
     "axios": "^0.19.0",
